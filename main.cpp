@@ -4,6 +4,9 @@
 #include <vector>
 #include <sstream>
 #include <iomanip>
+#include <deque>
+#include <map>
+
 
 struct Time {
 
@@ -48,6 +51,81 @@ struct Event {
     int tableNumber = 0;
     std::string originalLine;
 };
+
+struct Table {
+    int id;
+    int revenue = 0;
+    int timeOccupied = 0;
+    bool isBusy = false;
+};
+
+struct Client {
+    std::string name;
+    bool isInside = false;
+};
+
+class ComputerClub {
+private:
+    int numTables;
+    int pricePerHour;
+    Time startTime;
+    Time endTime;
+
+    std::vector<Table> tables;
+    std::map<std::string, Client> clients;
+
+public:
+    ComputerClub(int n, int price, Time start, Time end) :
+        numTables(n), pricePerHour(price), startTime(start), endTime(end) {
+            for (int i = 1; i <= n; ++i) tables.push_back({i});
+    }
+
+    void processEvents(const std::vector<Event>& events) {
+        std::cout << startTime.toString() << std::endl;
+
+        for (const auto& event : events) {
+            std::cout << event.time.toString() << " " << event.id << " " << event.clientName;
+            if (event.id == 2 || event.id == 12) std::cout << " " << event.tableNumber;
+            std::cout << std::endl;
+
+            switch (event.id) {
+                case 1:
+                    handleClientArrived(event);
+                    break;
+                case 2:
+                    break;
+                case 3:
+                    break;
+                case 4:
+                    break;
+            }
+        }
+
+        std::cout << endTime.toString() << std::endl;
+    }
+
+private:
+    void handleClientArrived(const Event& e) {
+        if (e.time < startTime) {
+            printError(e.time, "NotOpenYet");
+            return;
+        }
+
+        if (clients.count(e.clientName) && clients[e.clientName].isInside) {
+            printError(e.time, "YouShallNotPass");
+            return;
+        }
+
+        if (clients.find(e.clientName) == clients.end()) clients[e.clientName] = {e.clientName, false};
+
+        clients[e.clientName].isInside = true;
+    }
+
+    void printError(const Time& t, const std::string& msg) {
+        std::cout << t.toString() << " 13 " << msg << std::endl;
+    }
+};
+
 
 int NUM_TABLES;
 Time START_TIME;
@@ -143,16 +221,8 @@ int main(int argc, char* argv[]) {
         }
     }
 
-    std::cout << "Start: " << START_TIME.toString() << std::endl;
-    std::cout << "End: " << END_TIME.toString() << std::endl;
-    std::cout << "Price: " << PRICE_PER_HOUR << std::endl;
-    std::cout << "Tables: " << NUM_TABLES << std::endl;
-    std::cout << "--- Events ---" << std::endl;
-    for (const auto& ev: EVENTS) {
-        std::cout << ev.time.toString() << " " << ev.id << " " << ev.clientName;
-        if (ev.id == 2) std::cout << " table:" << ev.tableNumber;
-        std::cout << std::endl;
-    }
-
+    ComputerClub club(NUM_TABLES, PRICE_PER_HOUR, START_TIME, END_TIME);
+    club.processEvents(EVENTS);
+    
     return 0;
 }
