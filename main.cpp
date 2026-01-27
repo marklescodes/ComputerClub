@@ -96,13 +96,16 @@ public:
 
             switch (event.id) {
                 case 1:
-                    handleClientArrived(event);
+                    handleClientSit(event);
                     break;
                 case 2:
+                    handleClientArrived(event);
                     break;
                 case 3:
+                    handleClientWait(event);
                     break;
                 case 4:
+                    handleClientLeave(event);
                     break;
             }
         }
