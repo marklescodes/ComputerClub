@@ -96,10 +96,10 @@ public:
 
             switch (event.id) {
                 case 1:
-                    handleClientSit(event);
+                    handleClientArrived(event);
                     break;
                 case 2:
-                    handleClientArrived(event);
+                    handleClientSit(event);                
                     break;
                 case 3:
                     handleClientWait(event);
@@ -183,7 +183,7 @@ private:
     void handleClientWait(const Event& e) {
         for (const auto& t : tables) {
             if (!t.isBusy) {
-                printError(e.time, "ICanWaitNoLonger");
+                printError(e.time, "ICanWaitNoLonger!");
                 return;
             }
         }
