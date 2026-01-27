@@ -56,12 +56,17 @@ struct Table {
     int id;
     int revenue = 0;
     int timeOccupied = 0;
+
     bool isBusy = false;
+    std::string clientName = "";
+    Time startTime;
 };
 
 struct Client {
     std::string name;
     bool isInside = false;
+
+    int tableId = -1;
 };
 
 class ComputerClub {
@@ -73,6 +78,7 @@ private:
 
     std::vector<Table> tables;
     std::map<std::string, Client> clients;
+    std::deque<std::string> waitQueue;
 
 public:
     ComputerClub(int n, int price, Time start, Time end) :
@@ -123,6 +129,91 @@ private:
 
     void printError(const Time& t, const std::string& msg) {
         std::cout << t.toString() << " 13 " << msg << std::endl;
+    }
+
+    void sitDownTable(int tableIndex, Time currentTime) {
+        Table& t = tables[tableIndex];
+        
+        if (!t.isBusy) return;
+        int duration = currentTime.toMinutes() - t.startTime.toMinutes();
+        t.timeOccupied += duration;
+
+        int hours = (duration + 59) / 60;
+        t.revenue += hours * pricePerHour;
+
+        t.isBusy = false;
+        t.clientName = "";
+    }
+
+    void handleClientSit(const Event& e) {
+        if (clients.find(e.clientName) == clients.end() || !clients[e.clientName].isInside) {
+            printError(e.time, "ClientUnknown");
+            return;
+        }
+
+        if (tables[e.tableNumber - 1].isBusy) {
+            printError(e.time, "PlaceIsBusy");
+            return;
+        }
+
+        Client& client = clients[e.clientName];
+        if (client.tableId != -1) {
+            sitDownTable(client.tableId - 1, e.time);
+        }
+
+        Table& t = tables[e.tableNumber - 1];
+        t.isBusy = true;
+        t.clientName = e.clientName;
+        t.startTime = e.time;
+
+        client.tableId = e.tableNumber;
+    }
+
+    void handleClientWait(const Event& e) {
+        for (const auto& t : tables) {
+            if (!t.isBusy) {
+                printError(e.time, "ICanWaitNoLonger");
+                return;
+            }
+        }
+
+        if (waitQueue.size() >= (size_t)numTables) {
+            std::cout << e.time.toString() << " 11 " << e.clientName << std::endl;
+            clients[e.clientName].isInside = false;
+        } else {
+            waitQueue.push_back(e.clientName);
+        }
+    }
+
+    void handleClientLeave(const Event& e) {
+        if (clients.find(e.clientName) == clients.end() || !clients[e.clientName].isInside) {
+            printError(e.time, "ClientUnknown");
+            return;
+        }
+
+        Client& client = clients[e.clientName];
+        int freedTableId = client.tableId;
+
+        if (freedTableId != -1) {
+            sitDownTable(freedTableId - 1, e.time);
+            client.tableId = -1;
+        }
+
+        client.isInside = false;
+
+        if (freedTableId != -1 && !waitQueue.empty()) {
+            std::string nextClientName = waitQueue.front();
+            waitQueue.pop_front();
+
+            std::cout << e.time.toString() << " 12 " << nextClientName << " " << freedTableId << std::endl;
+
+            Table& t = tables[freedTableId - 1];
+            t.isBusy = true;
+            t.clientName = nextClientName;
+            t.startTime = e.time;
+
+            clients[nextClientName].tableId = freedTableId;
+        }
     }
 };
 
