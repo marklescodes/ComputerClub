@@ -6,7 +6,7 @@
 #include <iomanip>
 #include <deque>
 #include <map>
-
+#include <algorithm>
 
 struct Time {
 
@@ -107,7 +107,7 @@ public:
             }
         }
 
-        std::cout << endTime.toString() << std::endl;
+        closeClub();
     }
 
 private:
@@ -125,6 +125,14 @@ private:
         if (clients.find(e.clientName) == clients.end()) clients[e.clientName] = {e.clientName, false};
 
         clients[e.clientName].isInside = true;
+    }
+
+    std::string formatDuration(int totalMinutes) {
+        int h = totalMinutes / 60;
+        int m = totalMinutes % 60;
+        std::ostringstream oss;
+        oss << std::setfill('0') << std::setw(2) << h << ":" << std::setfill('0') << std::setw(2) << m;
+        return oss.str();
     }
 
     void printError(const Time& t, const std::string& msg) {
@@ -213,6 +221,36 @@ private:
             t.startTime = e.time;
 
             clients[nextClientName].tableId = freedTableId;
+        }
+    }
+
+    void closeClub() {
+        std::vector<std::string> remainingClients;
+        for (auto const& [name, client] : clients) {
+            if (client.isInside) {
+                remainingClients.push_back(name);
+            }
+        }
+
+        std::sort(remainingClients.begin(), remainingClients.end());
+
+        for (const std::string& name : remainingClients) {
+            Client& c = clients[name];
+
+            std::cout << endTime.toString() << " 11 " << name << std::endl;
+
+            if (c.tableId != -1) {
+                sitDownTable(c.tableId - 1, endTime);
+                c.tableId = -1;
+            }
+
+            c.isInside = false;
+        }
+
+        std::cout << endTime.toString() << std:: endl;
+
+        for (const auto& t : tables) {
+            std::cout << t.id << " " << t.revenue << " " << formatDuration(t.timeOccupied) << std::endl;
         }
     }
 };
