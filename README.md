@@ -1,102 +1,57 @@
-# Computer Club Simulation 
+# Computer Club Workflow Engine 🖥️
 
-A C++ console application that simulates the daily workflow of a computer club. The program processes a stream of events (client arrival, waiting in queue, sitting at a table, leaving) and calculates the daily revenue based on specific business rules.
+![C++](https://img.shields.io/badge/C%2B%2B-17-blue.svg)
+![Platform](https://img.shields.io/badge/Platform-Cross--platform-lightgrey.svg)
+![Build](https://img.shields.io/badge/Build-CMake-orange.svg)
 
-This solution was developed as part of a technical assessment (YADRO).
+A high-performance C++ console engine that simulates the operational workflow of a computer club. The system processes an event-driven stream (client arrivals, seat assignments, queuing) and calculates precise financial statistics based on custom business rules. 
 
-## Features
+*Developed as part of the technical assessment for YADRO.*
 
-- **Tech Stack:** C++17, STL.
-- **Build System:** CMake (Cross-platform).
-- **Architecture:** OOP approach. The club logic is encapsulated within the `ComputerClub` class.
-- **Algorithms:** Efficient usage of `std::deque` for the waiting queue and `std::map` for quick client lookups.
-- **Robustness:** Strict input validation and handling of logical errors (e.g., trying to sit at an occupied table, arriving before opening hours).
+## 🚀 Key Features
+- **Event-Driven Architecture**: Sequential processing of complex client scenarios with millisecond-accurate time accounting.
+- **Strict Business Logic**: Implements sophisticated rules for:
+  - Table occupancy and queue management.
+  - Arriving before/after business hours.
+  - Automated client expulsion at closing time.
+- **Financial Analytics**: Precise revenue calculation with hourly rounding (ceiling approach) and table utilization tracking.
+- **Robust Input Parsing**: Validates structured text input and handles logical edge cases with custom error reporting.
 
-## Project Structure
+## 🛠 Prerequisites
 
-- `main.cpp` — Main source code.
-- `CMakeLists.txt` — CMake configuration file.
-- `test_file.txt` — Sample input data for testing.
+- **Compiler**: GCC 9+, Clang 10+, or MSVC (C++17 support required).
+- **Build System**: CMake 3.10 or higher.
+- **Standard Library**: Uses STL containers (std::map, std::deque, std::vector).
 
-## Build and Run
+## ⚙️ Installation & Build
+- Clone the repository
+```bash
+git clone https://github.com/marklescodes/ComputerClub
+cd computer-club-simulation
+```
 
-To build this project, you will need:
-- A C++ compiler supporting C++17 (GCC, Clang).
-- **CMake** (version 3.10 or higher).
-- **Make**.
+- Build the project
+``` bash
+mkdir build && cd build
+cmake ..
+make
+```
 
-### Linux and macOS
+## 📈 Usage
 
-1. **Clone the repository** (or navigate to the project directory):
-   ```bash
-   cd path/to/project
+The application operates via the command line and expects a path to a configuration file:
 
-2. **Create a build directory**:
+``` bash
+./task ../test_file.txt
+```
 
-    ```bash
-    mkdir build
-    cd build
+Input File Format:
 
-3. **Generate build files and compile**:
+``` text
 
-     ```bash
-  
-     cmake ..
-     make
-
-  Upon successful compilation, an executable named task will appear in the build directory.
-
-4. **Run the application**:
-   
-    The program requires the path to the input file as an argument.
-  
-    ```bash
-  
-    ./task ../test_file.txt
-
-
-### Windows (MinGW / Visual Studio)
-
-     mkdir build
-     cd build
-     cmake ..
-     cmake --build .
-     task.exe ..\test_file.txt
-
-## Input format
-
-The program expects a text file with the following structure:
-
-    <Number of tables>
-    <Open time> <Close time>
-    <Hourly rate>
-    <Event time> <ID> <Event body>
-    ...
-
-Example (test_file.txt):
-
-    3
-    09:00 19:00
-    10
-    08:48 1 client1
-    09:41 1 client1
-    09:48 1 client2
-    ...
-
-## Output Example
-
-**Console Output**:
-The program prints the timeline of events, including errors and generated events (like clients leaving or sitting down from the queue), followed by the final statistics for each table.
-
-    09:00
-    08:48 13 NotOpenYet
-    09:41 1 client1
-    09:48 1 client2
-    09:52 13 ICanWaitNoLonger!
-    09:54 2 client1 1
-    ...
-    19:00 11 client3
-    19:00
-    1 70 05:58
-    2 30 02:18
-    3 90 08:01
+3                     # Number of tables
+09:00 19:00           # Operating hours
+10                    # Hourly rate
+08:48 1 client1       # Event: Time, ID, Payload
+...
+```
